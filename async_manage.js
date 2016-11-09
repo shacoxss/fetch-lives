@@ -1,45 +1,34 @@
 "use strict"
 
-function traversal( iterator, filter) {
+function traversal(iterator) {
     let solve = []
-    if( !filter ) {
-        filter = data => data
-    }
-
     function _loop(resolve, reject) {
         let next = iterator.next()
         if(next.done) {
             resolve(solve)
         } else {
             next.value.then( data => {
-                solve.push(filter(data))
+                solve = solve.concat(data)
                 _loop(resolve, reject)
             })
         }
     }
-
-    return new Promise(_loop)
+    return new Promise(_loop).then(_=>solve)
 }
 
-function threads_traversal( iterator, how, filter ) {
-    let solve = []
+function threads_traversal( iterator, how ) {
     let promises = []
-    if( !filter ) {
-        filter = data => data
-    }
+    let collapse = _=>_.reduce(
+        (p, c)=> p.concat(c)
+    )
 
     for(let i = 0; i < how; i++) {
-        promises.push(
-            traversal(
-                iterator, data => solve.push(filter(data))
-            )
-        )
+        promises.push(traversal(iterator))
     }
-
-    return Promise.all(promises).then(()=> solve)
+    
+    return Promise.all(promises).then(collapse)
 }
 
 module.exports = {
-    traversal : traversal,
     threads_traversal : threads_traversal
 }

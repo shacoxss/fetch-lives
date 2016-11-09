@@ -4,31 +4,30 @@ var request = require('request')
 module.exports = [
     function *() {
         let url = 'http://www.panda.tv/live_lists'
-        let max_thread = 1
         let page = 0
         let page_count = 0
-        let result = []
         let limit = 120
 
         let filter = (data) => {
             data = parse(data)
             if(!data) {
                 return []
-            } 
+            }
             if(page_count  === 0) {
                 page_count = Math.ceil(data.data.total/limit)
-                console.log(`Panda total : ${data.data.total}`)
             }
-            return data.data.items.map( (i) => ({
-                platform : '熊猫',
-                rid : i.id,
+            return data.data.items.map( i => ({
+                live_id : 1,
                 room_name : i.name,
-                user : i.userinfo.nickName,
-                tag : i.classification.cname,
-                num : i.person_num,
+                live_user_id : 'p_' + i.userinfo.rid,
+                name : i.userinfo.nickName,
+                online : i.person_num,
                 cover : i.pictures.img,
                 avatar : i.userinfo.avatar,
-                url : `http://www.panda.tv/${i.id}`
+                url : `http://www.panda.tv/${i.id}`,
+                category_name : i.classification.cname,
+                category_url : "http://www.panda.tv/cate/" + i.classification.ename,
+                category_id : 'p_' + i.classification.ename,
             }))
         }
 
@@ -42,13 +41,6 @@ module.exports = [
     }
 ]
 
-function fetch(url) {
-    let ms = Math.ceil(Math.random()*1000)
-    return new Promise((resolve, reject) => {
-        setTimeout(resolve, ms, url+'&time='+ms)
-    })
-}
-
 function parse(str) {
     try {
         return JSON.parse(str)
@@ -57,12 +49,11 @@ function parse(str) {
     }
 }
 
-// function fetch(url) {
-//     return new Promise((resolve, reject) => {
-//         request(url, (err, response, data) => {
-//             console.log(url)
-//             err ? reject(err) : resolve(data)
-//         })
-//     })
-// }
+function fetch(url) {
+    return new Promise((resolve, reject) => {
+        request(url, (err, response, data) => {
+            err ? reject(err) : resolve(data)
+        })
+    })
+}
 
