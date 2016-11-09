@@ -1,18 +1,14 @@
 "use strict"
-var request = require('request')
+var fetch = require('node-fetch')
 
 module.exports = [
     function *() {
-        let url = 'http://www.panda.tv/live_lists'
+        const url = 'http://www.panda.tv/live_lists'
+        const limit = 120
         let page = 0
         let page_count = 0
-        let limit = 120
 
-        let filter = (data) => {
-            data = parse(data)
-            if(!data) {
-                return []
-            }
+        const filter = (data) => {
             if(page_count  === 0) {
                 page_count = Math.ceil(data.data.total/limit)
             }
@@ -32,28 +28,11 @@ module.exports = [
         }
 
         while(1) {
-            if( page_count > page || page_count === 0 ) {
-                yield fetch(`${url}?pageno=${++page}&pagenum=${limit}&order=person_num&status=2`)
+            if (page_count && page > page_count) return
+
+            yield fetch(`${url}?pageno=${++page}&pagenum=${limit}&order=person_num&status=2`)
+                .then(_=>_.json())
                 .then(filter)
-            }
-            else return
         }
     }
 ]
-
-function parse(str) {
-    try {
-        return JSON.parse(str)
-    } catch(e) {
-        return false
-    }
-}
-
-function fetch(url) {
-    return new Promise((resolve, reject) => {
-        request(url, (err, response, data) => {
-            err ? reject(err) : resolve(data)
-        })
-    })
-}
-

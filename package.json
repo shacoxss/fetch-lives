@@ -9,8 +9,7 @@
   "author": "shx",
   "license": "ISC",
   "dependencies": {
-    "request": "^2.74.0"
+    "node-fetch": "^1.6.3"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
