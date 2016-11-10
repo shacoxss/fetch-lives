@@ -1,17 +1,18 @@
 "use strict"
 
-const await_for = iterator => {
+module.exports = iterator => {
 
     let solve = []
-    let queue = [_=>solve.push(_)]
+    let queue = []
 
     const _loop = (resolve, reject) => {
         const {value : next, done} = iterator.next()
 
         const exec_queue = result => {
             for (let job of queue) {
-                if (job instanceof Function) job(result)
+                if (job instanceof Function) result = job(result)
             }
+            solve.push(result)
             _loop(resolve, reject)
         }
 
@@ -28,19 +29,4 @@ const await_for = iterator => {
     }
 
     return promise
-}
-
-function await_for_multi( iterator, how ) {
-    // let promises = []
-
-    // for(let i = 0; i < how; i++) {
-    //     promises.push(await_for(iterator))
-    // }
-    let a = Array(10).fill().map(_=>await_for(iterator))
-    return Promise.all(a)
-}
-
-module.exports = {
-    await_for : await_for,
-    await_for_multi : await_for_multi,
 }

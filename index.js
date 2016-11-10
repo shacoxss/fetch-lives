@@ -1,24 +1,23 @@
 "use strict"
 
-const await_for = require('./await_for').await_for
-const lives = require('./lives').map(_=>_())
+const await_for = require('./await_for')
+const lives = require('./lives')
+const f = require('./collect')
 
-const async = num => generate => await_for(generate() ,num)
 const print = msg => process.stdout.write(msg)
-const fill = (f, many) => Array(many).fill().map(f)
+const c = f.collect
 
-const collapse = _=>{
-    while (_[0] instanceof Array) {
-        _ = _.reduce((p, c) => p.concat(c))
-    }
-    return _
-}
-Promise.all(
-    collapse(lives.map(
-        live => fill(_=>await_for(live), 10)
-    ))
-)
-.then(collapse)
-.then(_=>print(_.length+''))
+console.time('fetch')
+
+c(lives)
+.map(f.call)
+.promise()
+.then(console.log)
+// .map(f.call)
+// // .map(c(10).gen_fill_closure(await_for))
+// // .collapse()
+// .promise()
+// .collapse()
 // .then(JSON.stringify)
-// .then(console.log)
+// // .then(print)
+// .then(_=>console.timeEnd('fetch'))
