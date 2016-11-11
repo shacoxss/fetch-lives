@@ -2,16 +2,18 @@
 
 const util = require('util')
 
-const collect = init => {
-    return new Proxy(gen_store(init), {
+const collect = init => 
+    new Proxy(gen_store(init), {
+
         get : (target, prop, receiver) =>
             prop in f 
             ? (..._) => collect(f[prop](target, ..._))
             : util.isFunction(target[prop])
                 ? (..._) => collect(target[prop](..._))
                 : target[prop]
+    
     })
-}
+
 const f = {
     collapse : cross => util.isArray(cross[0]) 
         ? f.collapse(cross.reduce(f.concat)) 
@@ -26,20 +28,20 @@ const f = {
 
     call : _=>_(),
 
-    promise : t => Promise.all(t).then(f.collapse),
-
     pipe : (t, f) => f(t),
 
     collect : collect,
 }
 
-const gen_store = init =>
+const gen_store = init => 
     util.isArray(init)
-        ? init : util.isNumber(init)
-            ? Array(init) : [init]
+    ? init : util.isNumber(init)
+    ? Array(init) : wrap(init)
 
 const wrap = native => {
-    
+    if (native instanceof Object) return native
+
+    if (typeof native === 'string') return new String(native)
 }
 
 module.exports = f
