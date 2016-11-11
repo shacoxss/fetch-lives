@@ -22,11 +22,24 @@ const f = {
 
     concat : (p, c) => p.concat(c),
 
+    unique : (t, col) => {
+        let temp = []
+
+        return t.filter(_=> {
+            if (_[col] && temp.indexOf(_[col]) === -1) {
+                temp.push(_[col])
+                return true
+            }
+        })
+    },
+
     fill_closure : (target, f, ...arg) => target.fill().map(_=>f(...arg)),
 
     gen_fill_closure : (target, func) => (...arg)=> f.fill_closure(target, func, ...arg),
 
     call : _=>_(),
+
+    pluck : (t, key) => t.map(_=>_[key]),
 
     pipe : (t, f) => f(t),
 
